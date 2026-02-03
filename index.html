@@ -61,77 +61,73 @@
             const [submitted, setSubmitted] = useState(false);
             const [loading, setLoading] = useState(false);
             const [formData, setFormData] = useState({
-                'entry.899999615': '',
-                'entry.464377799': [],
-                'entry.1414352831': '',
-                'entry.726589747': [],
-                'entry.418035188': '',
-                'entry.842552003': [],
-                'entry.2061844101': '',
-                'entry.67805626': [],
-                'entry.1003343879': '',
-                'entry.1664860146': '',
-                'entry.1578497332': '',
-                'entry.553624540': '',
-                'entry.1437601907': '',
-                'entry.1343935114': '',
-                'entry.2141434383': '',
-                'entry.2082616046': '',
-                'entry.951165679': [],
-                'entry.1748333818': '',
-                'entry.1579464985': '',
-                'entry.1045920345': ''
+                'entry.899999615': '', // 案場名稱
+                'entry.464377799': [], // 填寫人職稱
+                'entry.1414352831': '', // Q1
+                'entry.726589747': [], // 1-1
+                'entry.418035188': '',  // Q2
+                'entry.842552003': [], // 2-1
+                'entry.2061844101': '', // Q3
+                'entry.67805626': [], // 3-1
+                'entry.1003343879': '', // Q4
+                'entry.1664860146': '', // Q5
+                'entry.1578497332': '', // Q6
+                'entry.553624540': '',  // Q7
+                'entry.1437601907': '', // Q8
+                'entry.1343935114': '', // Q9
+                'entry.2141434383': '', // Q10
+                'entry.2082616046': '', // Q11
+                'entry.951165679': [], // Q12
+                'entry.1748333818': '', // Q13
+                'entry.1579464985': '', // Q14
+                'entry.1045920345': ''  // Q15
             });
 
             const handleSubmit = (e) => {
                 e.preventDefault();
                 setLoading(true);
 
-                // 修正過的 Google Form 提交 URL
                 const googleFormAction = "https://docs.google.com/forms/d/e/1FAIpQLScWKCVehF5x0dh4jXpC6pitzsvmOJSzUrGvWHh3hfuW332JNQ/formResponse";
                 
-                // 建立一個隱藏的表單
-                const hiddenForm = document.createElement('form');
-                hiddenForm.action = googleFormAction;
-                hiddenForm.method = 'POST';
-                hiddenForm.target = 'hidden_iframe_target'; 
-                hiddenForm.style.display = 'none';
+                // 建立隱藏的 iframe 用來接收 Google 回傳
+                let iframe = document.getElementById('hidden_iframe');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'hidden_iframe';
+                    iframe.name = 'hidden_iframe';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                }
 
-                // 填充資料
+                // 建立隱藏的 Form 實際模擬提交動作
+                const form = document.createElement('form');
+                form.action = googleFormAction;
+                form.method = 'POST';
+                form.target = 'hidden_iframe'; // 關鍵：指向 iframe
+                form.style.display = 'none';
+
                 Object.keys(formData).forEach(key => {
                     if (Array.isArray(formData[key])) {
                         formData[key].forEach(val => {
                             const input = document.createElement('input');
                             input.name = key;
                             input.value = val;
-                            hiddenForm.appendChild(input);
+                            form.appendChild(input);
                         });
                     } else {
                         const input = document.createElement('input');
                         input.name = key;
                         input.value = formData[key];
-                        hiddenForm.appendChild(input);
+                        form.appendChild(input);
                     }
                 });
 
-                // 建立隱藏的 iframe 用於處理 Google 的跳轉
-                let iframe = document.getElementById('hidden_iframe_target');
-                if (!iframe) {
-                    iframe = document.createElement('iframe');
-                    iframe.id = 'hidden_iframe_target';
-                    iframe.name = 'hidden_iframe_target';
-                    iframe.style.display = 'none';
-                    document.body.appendChild(iframe);
-                }
+                document.body.appendChild(form);
+                form.submit();
 
-                document.body.appendChild(hiddenForm);
-                hiddenForm.submit();
-
-                // 模擬處理時間並更新介面
+                // 2秒後顯示成功畫面
                 setTimeout(() => {
-                    if (document.body.contains(hiddenForm)) {
-                        document.body.removeChild(hiddenForm);
-                    }
+                    document.body.removeChild(form);
                     setLoading(false);
                     setSubmitted(true);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -186,7 +182,7 @@
             return (
                 <div className="min-h-screen pb-20 bg-sky-50/50">
                     <header className="relative h-80 md:h-[450px] flex items-center justify-center overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2070&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="Solar energy" />
+                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2070&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="藍天白雲太陽能" />
                         <div className="absolute inset-0 bg-gradient-to-b from-sky-900/40 via-sky-800/10 to-transparent"></div>
                         <div className="relative z-10 text-center px-4 animate-card">
                             <div className="bg-white/20 backdrop-blur-3xl inline-flex p-6 rounded-[2.5rem] mb-6 border border-white/40 shadow-2xl"><Icons.Solar /></div>
