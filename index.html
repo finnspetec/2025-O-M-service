@@ -39,16 +39,12 @@
         const { useState } = React;
 
         const App = () => {
-            const [status, setStatus] = useState('idle'); // idle, submitting, submitted
+            const [status, setStatus] = useState('idle');
             const [formData, setFormData] = useState({
-                'entry.899999615': '', // 案場名稱
-                'entry.464377799': [], // 填寫人職稱
-                'entry.1414352831': '', // Q1
-                'entry.726589747': [], // 1-1
-                'entry.418035188': '', // Q2
-                'entry.842552003': [], // 2-1
-                'entry.2061844101': '', // Q3
-                'entry.67805626': [], // 3-1
+                'entry.899999615': '', 'entry.464377799': [],
+                'entry.1414352831': '', 'entry.726589747': [],
+                'entry.418035188': '', 'entry.842552003': [],
+                'entry.2061844101': '', 'entry.67805626': [],
                 'entry.1003343879': '', 'entry.1664860146': '', 'entry.1578497332': '', 
                 'entry.553624540': '', 'entry.1437601907': '', 'entry.1343935114': '', 
                 'entry.2141434383': '', 'entry.2082616046': '', 'entry.951165679': [], 
@@ -57,7 +53,6 @@
 
             const handleSubmit = () => {
                 setStatus('submitting');
-                // 模擬處理時間，確保 Form 已經發出
                 setTimeout(() => {
                     setStatus('submitted');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -86,7 +81,6 @@
                             >{opt}</button>
                         ))}
                     </div>
-                    {/* 隱藏 Input 供表單提交 */}
                     <input type="hidden" name={name} value={formData[name]} />
                 </div>
             );
@@ -96,8 +90,8 @@
                     <div className="max-w-md w-full bg-white p-12 rounded-[3rem] shadow-2xl text-center animate-card border-t-[15px] border-green-500">
                         <div className="text-6xl mb-6">✅</div>
                         <h2 className="text-3xl font-black text-slate-800 mb-4">問卷已提交</h2>
-                        <p className="text-slate-500 mb-10 text-lg font-medium">您的回饋已成功記錄於後台。</p>
-                        <button onClick={() => window.location.reload()} className="w-full bg-sky-600 text-white py-5 rounded-3xl font-black text-xl hover:bg-sky-700 shadow-xl transition-all">返回填寫頁</button>
+                        <p className="text-slate-500 mb-10 text-lg font-medium text-center">感謝您協助日益智慧能源提升品質。</p>
+                        <button onClick={() => window.location.reload()} className="w-full bg-sky-600 text-white py-5 rounded-3xl font-black text-xl hover:bg-sky-700 shadow-xl transition-all">返回</button>
                     </div>
                 </div>
             );
@@ -105,36 +99,24 @@
             return (
                 <div className="min-h-screen pb-20 bg-sky-50/50">
                     <header className="relative h-80 flex items-center justify-center overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2070" className="absolute inset-0 w-full h-full object-cover" alt="Solar" />
+                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2070" className="absolute inset-0 w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-sky-900/40"></div>
-                        <div className="relative z-10 text-center px-4 animate-card">
-                            <h1 className="text-white text-4xl md:text-5xl font-black mb-2 drop-shadow-lg">日益智慧能源</h1>
-                            <p className="text-sky-50 text-xl font-bold tracking-widest uppercase">2025年度維運服務滿意度調查</p>
-                        </div>
+                        <h1 className="relative z-10 text-white text-4xl font-black text-center tracking-widest">日益智慧能源<br/><span className="text-xl font-bold uppercase">2025年度維運服務滿意度調查</span></h1>
                     </header>
 
                     <main className="max-w-4xl mx-auto -mt-16 px-4 relative z-20">
-                        {/* 關鍵：隱藏的 iframe 攔截 Google 回傳 */}
                         <iframe name="hidden_confirm" id="hidden_confirm" style={{display: 'none'}}></iframe>
-
-                        <form 
-                            action="https://docs.google.com/forms/d/e/1FAIpQLScWKCVehF5x0dh4jXpC6pitzsvmOJSzUrGvWHh3hfuW332JNQ/formResponse" 
-                            method="POST" 
-                            target="hidden_confirm"
-                            onSubmit={handleSubmit}
-                            className="space-y-4"
-                        >
+                        <form action="https://docs.google.com/forms/d/e/1FAIpQLScWKCVehF5x0dh4jXpC6pitzsvmOJSzUrGvWHh3hfuW332JNQ/formResponse" method="POST" target="hidden_confirm" onSubmit={handleSubmit} className="space-y-4">
+                            
                             <div className="p-8 bg-white rounded-[2.5rem] shadow-xl border-l-[12px] border-sky-700 animate-card mb-8">
                                 <label className="block text-slate-800 font-black mb-4 text-2xl">案場名稱 <span className="text-rose-500">*</span></label>
-                                <input required type="text" name="entry.899999615" value={formData['entry.899999615']} onChange={(e) => handleRadioChange('entry.899999615', e.target.value)} className="w-full px-6 py-4 bg-sky-50 border-2 rounded-2xl outline-none font-bold focus:border-sky-500 transition-all" placeholder="請輸入全名" />
-                                
+                                <input required type="text" name="entry.899999615" value={formData['entry.899999615']} onChange={(e) => handleRadioChange('entry.899999615', e.target.value)} className="w-full px-6 py-4 bg-sky-50 border-2 rounded-2xl outline-none font-bold focus:border-sky-500 transition-all" />
                                 <label className="block text-slate-800 font-black mt-8 mb-4 text-2xl">填寫人職稱 <span className="text-rose-500">*</span></label>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     {["公司負責人", "維運承辦人", "專案負責人"].map(r => (
-                                        <button key={r} type="button" onClick={() => handleCheckChange('entry.464377799', r)} className={`py-4 rounded-2xl border-2 font-bold transition-all ${formData['entry.464377799'].includes(r) ? 'bg-sky-700 border-sky-700 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400 hover:border-sky-300'}`}>{r}</button>
+                                        <button key={r} type="button" onClick={() => handleCheckChange('entry.464377799', r)} className={`py-4 rounded-2xl border-2 font-bold transition-all ${formData['entry.464377799'].includes(r) ? 'bg-sky-700 border-sky-700 text-white' : 'bg-white text-slate-400 hover:border-sky-300'}`}>{r}</button>
                                     ))}
                                 </div>
-                                {/* 多選隱藏欄位 */}
                                 {formData['entry.464377799'].map((val, idx) => <input key={idx} type="hidden" name="entry.464377799" value={val} />)}
                             </div>
 
@@ -148,7 +130,7 @@
                                             <label key={r} className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm cursor-pointer hover:bg-amber-100 transition-all">
                                                 <input type="checkbox" checked={formData['entry.726589747'].includes(r)} onChange={() => handleCheckChange('entry.726589747', r)} className="w-6 h-6 accent-amber-600" />
                                                 <span className="font-bold text-slate-700">{r}</span>
-                                                <input type="hidden" name="entry.726589747" value={formData['entry.726589747'].includes(r) ? r : ''} />
+                                                {formData['entry.726589747'].includes(r) && <input type="hidden" name="entry.726589747" value={r} />}
                                             </label>
                                         ))}
                                     </div>
@@ -156,7 +138,36 @@
                             )}
 
                             {renderScoreRow("2. 本公司的維運服務表現符合期待程度？", "entry.418035188")}
+                            {isLow(formData['entry.418035188']) && (
+                                <div className="p-8 bg-amber-50 rounded-[2.5rem] border-4 border-amber-200 animate-card mb-8">
+                                    <p className="font-bold text-amber-900 mb-4 italic text-lg">2-1.落差較大部分 (可複選)：</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {["回應速度", "技術專業度", "服務內容深度", "溝通與說明方式", "整體資源投入"].map(r => (
+                                            <label key={r} className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm cursor-pointer hover:bg-amber-100 transition-all">
+                                                <input type="checkbox" checked={formData['entry.842552003'].includes(r)} onChange={() => handleCheckChange('entry.842552003', r)} className="w-6 h-6 accent-amber-600" />
+                                                <span className="font-bold text-slate-700">{r}</span>
+                                                {formData['entry.842552003'].includes(r) && <input type="hidden" name="entry.842552003" value={r} />}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {renderScoreRow("3. 本公司的維運品質競爭力為何？", "entry.2061844101")}
+                            {isLow(formData['entry.2061844101']) && (
+                                <div className="p-8 bg-amber-50 rounded-[2.5rem] border-4 border-amber-200 animate-card mb-8">
+                                    <p className="font-bold text-amber-900 mb-4 italic text-lg">3-1.需要加強面向 (可複選)：</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {["價值感受與費用對應", "回應效率", "技術能力", "主動性與改善建議", "溝通協調"].map(r => (
+                                            <label key={r} className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm cursor-pointer hover:bg-amber-100 transition-all">
+                                                <input type="checkbox" checked={formData['entry.67805626'].includes(r)} onChange={() => handleCheckChange('entry.67805626', r)} className="w-6 h-6 accent-amber-600" />
+                                                <span className="font-bold text-slate-700">{r}</span>
+                                                {formData['entry.67805626'].includes(r) && <input type="hidden" name="entry.67805626" value={r} />}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="py-6 px-4 font-black text-2xl text-sky-900 border-b-4 border-sky-600 inline-block mb-4">二、維運執行細項評估</div>
                             {renderScoreRow("4. 定期巡檢與保養執行的確實程度", "entry.1003343879")}
@@ -175,7 +186,7 @@
                                     {["回應速度", "技術說明", "巡檢品質", "溝通方式"].map(item => (
                                         <label key={item} className="flex flex-col items-center gap-3 p-6 bg-sky-50 rounded-2xl cursor-pointer hover:bg-emerald-50 transition-all border-2 border-transparent">
                                             <input type="checkbox" checked={formData['entry.951165679'].includes(item)} onChange={() => handleCheckChange('entry.951165679', item)} className="w-8 h-8 accent-emerald-500" />
-                                            <span className="font-black text-slate-700">{item}</span>
+                                            <span className="font-black text-slate-700 text-center">{item}</span>
                                             {formData['entry.951165679'].includes(item) && <input type="hidden" name="entry.951165679" value={item} />}
                                         </label>
                                     ))}
@@ -186,17 +197,14 @@
 
                             <div className="p-8 bg-white rounded-[2.5rem] shadow-xl border-l-[12px] border-emerald-600 animate-card">
                                 <label className="block text-slate-800 font-black mb-4 text-2xl">14. 您最希望優化的是？ <span className="text-rose-500">*</span></label>
-                                <textarea required name="entry.1579464985" value={formData['entry.1579464985']} onChange={(e) => handleRadioChange('entry.1579464985', e.target.value)} rows="4" className="w-full px-6 py-4 bg-sky-50 border-2 rounded-2xl outline-none font-bold focus:border-emerald-500 transition-all" placeholder="建議..."></textarea>
-                                
+                                <textarea required name="entry.1579464985" value={formData['entry.1579464985']} onChange={(e) => handleRadioChange('entry.1579464985', e.target.value)} rows="4" className="w-full px-6 py-4 bg-sky-50 border-2 rounded-2xl outline-none font-bold focus:border-emerald-500 transition-all" />
                                 <label className="block text-slate-800 font-black mt-10 mb-4 text-2xl">15. 其他建議或回饋 <span className="text-rose-500">*</span></label>
-                                <textarea required name="entry.1045920345" value={formData['entry.1045920345']} onChange={(e) => handleRadioChange('entry.1045920345', e.target.value)} rows="4" className="w-full px-6 py-4 bg-sky-50 border-2 rounded-2xl outline-none font-bold focus:border-emerald-500 transition-all" placeholder="想法..."></textarea>
+                                <textarea required name="entry.1045920345" value={formData['entry.1045920345']} onChange={(e) => handleRadioChange('entry.1045920345', e.target.value)} rows="4" className="w-full px-6 py-4 bg-sky-50 border-2 rounded-2xl outline-none font-bold focus:border-emerald-500 transition-all" />
                             </div>
 
-                            <div className="pt-16 pb-10">
-                                <button type="submit" className={`w-full py-8 rounded-[3rem] text-3xl font-black text-white shadow-2xl transition-all ${status === 'submitting' ? 'bg-slate-400 cursor-wait animate-pulse' : 'bg-gradient-to-r from-sky-600 to-sky-700 hover:scale-[1.02] active:scale-95'}`}>
-                                    {status === 'submitting' ? <span className="loading-dots">資料傳輸中</span> : '確認提交調查'}
-                                </button>
-                            </div>
+                            <button type="submit" className={`w-full py-8 rounded-[3rem] text-3xl font-black text-white shadow-2xl transition-all ${status === 'submitting' ? 'bg-slate-400 cursor-wait animate-pulse' : 'bg-gradient-to-r from-sky-600 to-sky-700 hover:scale-[1.02] active:scale-95'}`}>
+                                {status === 'submitting' ? <span className="loading-dots">資料傳輸中</span> : '確認提交調查'}
+                            </button>
                         </form>
                     </main>
                 </div>
