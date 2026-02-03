@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日益智慧能源 - 2025年度維運服務滿意度調查</title>
-    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
@@ -63,60 +61,81 @@
             const [submitted, setSubmitted] = useState(false);
             const [loading, setLoading] = useState(false);
             const [formData, setFormData] = useState({
-                'entry.899999615': '', // 案場名稱
-                'entry.464377799': [], // 填寫人職稱
-                'entry.1414352831': '', // Q1
-                'entry.726589747': [], // 1-1
-                'entry.418035188': '',  // Q2
-                'entry.842552003': [], // 2-1
-                'entry.2061844101': '', // Q3
-                'entry.67805626': [], // 3-1
-                'entry.1003343879': '', // Q4
-                'entry.1664860146': '', // Q5
-                'entry.1578497332': '', // Q6
-                'entry.553624540': '',  // Q7
-                'entry.1437601907': '', // Q8
-                'entry.1343935114': '', // Q9
-                'entry.2141434383': '', // Q10
-                'entry.2082616046': '', // Q11
-                'entry.951165679': [], // Q12
-                'entry.1748333818': '', // Q13
-                'entry.1579464985': '', // Q14
-                'entry.1045920345': ''  // Q15
+                'entry.899999615': '',
+                'entry.464377799': [],
+                'entry.1414352831': '',
+                'entry.726589747': [],
+                'entry.418035188': '',
+                'entry.842552003': [],
+                'entry.2061844101': '',
+                'entry.67805626': [],
+                'entry.1003343879': '',
+                'entry.1664860146': '',
+                'entry.1578497332': '',
+                'entry.553624540': '',
+                'entry.1437601907': '',
+                'entry.1343935114': '',
+                'entry.2141434383': '',
+                'entry.2082616046': '',
+                'entry.951165679': [],
+                'entry.1748333818': '',
+                'entry.1579464985': '',
+                'entry.1045920345': ''
             });
 
-            const handleSubmit = async (e) => {
+            const handleSubmit = (e) => {
                 e.preventDefault();
                 setLoading(true);
 
-                const googleFormUrl = "https://docs.google.com/forms/u/0/d/e/1FAIpQLScWKCVehF5x0dh4jXpC6pitzsvmOJSzUrGvWHh3hfuW332JNQ/formResponse";
-                const params = new URLSearchParams();
+                // 修正過的 Google Form 提交 URL
+                const googleFormAction = "https://docs.google.com/forms/d/e/1FAIpQLScWKCVehF5x0dh4jXpC6pitzsvmOJSzUrGvWHh3hfuW332JNQ/formResponse";
                 
+                // 建立一個隱藏的表單
+                const hiddenForm = document.createElement('form');
+                hiddenForm.action = googleFormAction;
+                hiddenForm.method = 'POST';
+                hiddenForm.target = 'hidden_iframe_target'; 
+                hiddenForm.style.display = 'none';
+
+                // 填充資料
                 Object.keys(formData).forEach(key => {
                     if (Array.isArray(formData[key])) {
-                        formData[key].forEach(val => params.append(key, val));
+                        formData[key].forEach(val => {
+                            const input = document.createElement('input');
+                            input.name = key;
+                            input.value = val;
+                            hiddenForm.appendChild(input);
+                        });
                     } else {
-                        params.append(key, formData[key]);
+                        const input = document.createElement('input');
+                        input.name = key;
+                        input.value = formData[key];
+                        hiddenForm.appendChild(input);
                     }
                 });
 
-                try {
-                    await fetch(googleFormUrl, {
-                        method: "POST",
-                        mode: "no-cors",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                        body: params.toString()
-                    });
-                    
-                    setTimeout(() => {
-                        setLoading(false);
-                        setSubmitted(true);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 1500);
-                } catch (err) {
-                    setLoading(false);
-                    console.error("Submission error", err);
+                // 建立隱藏的 iframe 用於處理 Google 的跳轉
+                let iframe = document.getElementById('hidden_iframe_target');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'hidden_iframe_target';
+                    iframe.name = 'hidden_iframe_target';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
                 }
+
+                document.body.appendChild(hiddenForm);
+                hiddenForm.submit();
+
+                // 模擬處理時間並更新介面
+                setTimeout(() => {
+                    if (document.body.contains(hiddenForm)) {
+                        document.body.removeChild(hiddenForm);
+                    }
+                    setLoading(false);
+                    setSubmitted(true);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 2000);
             };
 
             const handleRadioChange = (name, value) => {
@@ -167,7 +186,7 @@
             return (
                 <div className="min-h-screen pb-20 bg-sky-50/50">
                     <header className="relative h-80 md:h-[450px] flex items-center justify-center overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2070&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="藍天白雲太陽能" />
+                        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2070&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="Solar energy" />
                         <div className="absolute inset-0 bg-gradient-to-b from-sky-900/40 via-sky-800/10 to-transparent"></div>
                         <div className="relative z-10 text-center px-4 animate-card">
                             <div className="bg-white/20 backdrop-blur-3xl inline-flex p-6 rounded-[2.5rem] mb-6 border border-white/40 shadow-2xl"><Icons.Solar /></div>
@@ -178,7 +197,6 @@
 
                     <main className="max-w-4xl mx-auto -mt-16 px-4 relative z-20">
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* 案場資料 */}
                             <div className="p-8 md:p-12 bg-white rounded-[2.5rem] shadow-xl border-l-[12px] border-sky-700 animate-card mb-12">
                                 <label className="block text-slate-800 font-black mb-6 text-2xl">案場名稱 <span className="text-rose-500">*</span></label>
                                 <input required type="text" value={formData['entry.899999615']} onChange={(e) => handleRadioChange('entry.899999615', e.target.value)} placeholder="請輸入案場名稱全名" className="w-full px-8 py-6 bg-sky-50 border-2 border-sky-100 rounded-3xl focus:border-sky-500 outline-none transition-all mb-12 text-xl font-bold shadow-inner" />
