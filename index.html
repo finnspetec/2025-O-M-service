@@ -14,11 +14,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         body { 
             font-family: 'Noto Sans TC', sans-serif; 
-            background-color: #f0f9ff; /* 淺天藍背景 */
+            background-color: #f0f9ff;
             -webkit-tap-highlight-color: transparent;
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
@@ -44,7 +44,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useRef } = React;
+        const { useState } = React;
 
         const Icons = {
             Solar: () => (
@@ -66,8 +66,11 @@
                 'entry.899999615': '', // 案場名稱
                 'entry.464377799': [], // 填寫人職稱
                 'entry.1414352831': '', // Q1
+                'entry.726589747': [], // 1-1
                 'entry.418035188': '',  // Q2
+                'entry.842552003': [], // 2-1
                 'entry.2061844101': '', // Q3
+                'entry.67805626': [], // 3-1
                 'entry.1003343879': '', // Q4
                 'entry.1664860146': '', // Q5
                 'entry.1578497332': '', // Q6
@@ -77,17 +80,43 @@
                 'entry.2141434383': '', // Q10
                 'entry.2082616046': '', // Q11
                 'entry.951165679': [], // Q12
-                'entry.1748333818': ''  // Q13
+                'entry.1748333818': '', // Q13
+                'entry.1579464985': '', // Q14
+                'entry.1045920345': ''  // Q15
             });
 
-            const handleSubmit = () => {
+            const handleSubmit = async (e) => {
+                e.preventDefault();
                 setLoading(true);
-                // 延長等待時間到 4 秒，確保 Google 表單收件完畢再換頁面
-                setTimeout(() => {
+
+                const googleFormUrl = "https://docs.google.com/forms/u/0/d/e/1FAIpQLScWKCVehF5x0dh4jXpC6pitzsvmOJSzUrGvWHh3hfuW332JNQ/formResponse";
+                const params = new URLSearchParams();
+                
+                Object.keys(formData).forEach(key => {
+                    if (Array.isArray(formData[key])) {
+                        formData[key].forEach(val => params.append(key, val));
+                    } else {
+                        params.append(key, formData[key]);
+                    }
+                });
+
+                try {
+                    await fetch(googleFormUrl, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: params.toString()
+                    });
+                    
+                    setTimeout(() => {
+                        setLoading(false);
+                        setSubmitted(true);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 1500);
+                } catch (err) {
                     setLoading(false);
-                    setSubmitted(true);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 4000);
+                    console.error("Submission error", err);
+                }
             };
 
             const handleRadioChange = (name, value) => {
@@ -105,30 +134,20 @@
             const scoreOptions = ["1.非常不滿意", "2.不滿意", "3.尚可", "4.滿意", "5.非常滿意"];
             const isLowScore = (val) => val && (val.includes('1.') || val.includes('2.') || val.includes('3.'));
 
-            const renderQuestionCard = (label, name, options, type = "radio", required = true) => (
-                <div className="p-6 md:p-8 bg-white/90 rounded-[2rem] border-l-[10px] border-sky-500 shadow-lg animate-card mb-8">
-                    <label className="block text-slate-800 font-black mb-6 text-xl leading-tight">
-                        {label} {required && <span className="text-rose-500">*</span>}
+            const renderScoreRow = (label, name) => (
+                <div className="p-6 md:p-8 bg-white rounded-[2rem] border-l-[10px] border-sky-500 shadow-md animate-card mb-6">
+                    <label className="block text-slate-800 font-black mb-5 text-xl leading-tight">
+                        {label} <span className="text-rose-500">*</span>
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-                        {options.map(opt => (
+                        {scoreOptions.map(opt => (
                             <button 
-                                key={opt} 
-                                type="button" 
-                                onClick={() => type === "radio" ? handleRadioChange(name, opt) : handleCheckboxChange(name, opt)}
-                                className={`py-4 rounded-2xl border-2 font-bold transition-all text-sm ${
-                                    (type === "radio" ? formData[name] === opt : formData[name].includes(opt))
-                                    ? 'bg-sky-600 border-sky-600 text-white shadow-lg' 
-                                    : 'bg-white border-slate-100 text-slate-400 hover:border-sky-300'
-                                }`}
+                                key={opt} type="button" 
+                                onClick={() => handleRadioChange(name, opt)}
+                                className={`py-4 rounded-2xl border-2 font-bold transition-all text-sm ${formData[name] === opt ? 'bg-sky-600 border-sky-600 text-white shadow-lg' : 'bg-white border-slate-100 text-slate-400 hover:border-sky-300'}`}
                             >{opt}</button>
                         ))}
                     </div>
-                    {type === "radio" ? (
-                        <input type="hidden" name={name} value={formData[name]} required={required} />
-                    ) : (
-                        formData[name].map(val => <input key={val} type="hidden" name={name} value={val} />)
-                    )}
                 </div>
             );
 
@@ -137,9 +156,9 @@
                     <div className="min-h-screen flex items-center justify-center p-6 bg-sky-50">
                         <div className="max-w-md w-full bg-white p-12 rounded-[3rem] shadow-2xl text-center animate-card border-t-[15px] border-green-500">
                             <div className="flex justify-center mb-8"><Icons.Check /></div>
-                            <h2 className="text-3xl font-black text-slate-800 mb-4">回覆成功</h2>
-                            <p className="text-slate-500 mb-10 text-lg font-medium leading-relaxed">您的意見已正式記錄於 Google 表單後台。<br/>感謝您協助日益智慧能源精進維運品質。</p>
-                            <button onClick={() => window.location.reload()} className="w-full bg-sky-600 text-white py-5 rounded-3xl font-black text-xl hover:bg-sky-700 transition-all shadow-xl">返回問卷</button>
+                            <h2 className="text-3xl font-black text-slate-800 mb-4">問卷已提交</h2>
+                            <p className="text-slate-500 mb-10 text-lg font-medium leading-relaxed">您的回饋已成功記錄於後台。<br/>感謝您協助日益智慧能源提升服務品質。</p>
+                            <button onClick={() => window.location.reload()} className="w-full bg-sky-600 text-white py-5 rounded-3xl font-black text-xl hover:bg-sky-700 transition-all shadow-xl">返回填寫頁</button>
                         </div>
                     </div>
                 );
@@ -147,33 +166,22 @@
 
             return (
                 <div className="min-h-screen pb-20 bg-sky-50/50">
-                    <header className="relative h-80 md:h-[500px] flex items-center justify-center overflow-hidden">
+                    <header className="relative h-80 md:h-[450px] flex items-center justify-center overflow-hidden">
                         <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2070&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover" alt="藍天白雲太陽能" />
-                        <div className="absolute inset-0 bg-gradient-to-b from-sky-900/40 via-sky-800/20 to-sky-50/10"></div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-sky-900/40 via-sky-800/10 to-transparent"></div>
                         <div className="relative z-10 text-center px-4 animate-card">
                             <div className="bg-white/20 backdrop-blur-3xl inline-flex p-6 rounded-[2.5rem] mb-6 border border-white/40 shadow-2xl"><Icons.Solar /></div>
                             <h1 className="text-white text-4xl md:text-6xl font-black mb-4 tracking-tight drop-shadow-2xl">日益智慧能源</h1>
-                            <p className="text-sky-50 text-xl md:text-2xl font-bold tracking-[0.3em] drop-shadow-lg uppercase">2025年度維運服務滿意度調查</p>
+                            <p className="text-sky-50 text-xl md:text-2xl font-bold tracking-[0.3em] uppercase drop-shadow-lg">2025年度維運服務滿意度調查</p>
                         </div>
                     </header>
 
                     <main className="max-w-4xl mx-auto -mt-16 px-4 relative z-20">
-                        {/* 關鍵：透過隱藏 iframe 提交，確保不跳轉 */}
-                        <iframe name="hidden_iframe" id="hidden_iframe" style={{display:'none'}}></iframe>
-
-                        <form 
-                            action="https://docs.google.com/forms/u/0/d/e/1FAIpQLScWKCVehF5x0dh4jXpC6pitzsvmOJSzUrGvWHh3hfuW332JNQ/formResponse"
-                            method="POST"
-                            target="hidden_iframe"
-                            onSubmit={handleSubmit}
-                            className="space-y-4"
-                        >
-                            <input type="hidden" name="fvv" value="1" /><input type="hidden" name="fbzx" value="764606553543506960" /><input type="hidden" name="pageHistory" value="0" />
-
-                            {/* 案場名稱與填寫人 */}
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* 案場資料 */}
                             <div className="p-8 md:p-12 bg-white rounded-[2.5rem] shadow-xl border-l-[12px] border-sky-700 animate-card mb-12">
                                 <label className="block text-slate-800 font-black mb-6 text-2xl">案場名稱 <span className="text-rose-500">*</span></label>
-                                <input required type="text" name="entry.899999615" value={formData['entry.899999615']} onChange={(e) => handleRadioChange('entry.899999615', e.target.value)} placeholder="請輸入完整案場名稱" className="w-full px-8 py-6 bg-sky-50 border-2 border-sky-100 rounded-3xl focus:border-sky-500 outline-none transition-all mb-12 text-xl font-bold" />
+                                <input required type="text" value={formData['entry.899999615']} onChange={(e) => handleRadioChange('entry.899999615', e.target.value)} placeholder="請輸入案場名稱全名" className="w-full px-8 py-6 bg-sky-50 border-2 border-sky-100 rounded-3xl focus:border-sky-500 outline-none transition-all mb-12 text-xl font-bold shadow-inner" />
                                 
                                 <label className="block text-slate-800 font-black mb-6 text-2xl">填寫人職稱 (可複選) <span className="text-rose-500">*</span></label>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -181,105 +189,100 @@
                                         <button key={role} type="button" onClick={() => handleCheckboxChange('entry.464377799', role)} className={`px-6 py-5 rounded-3xl border-2 font-black transition-all text-lg ${formData['entry.464377799'].includes(role) ? 'bg-sky-700 border-sky-700 text-white shadow-xl' : 'bg-white border-slate-100 text-slate-400'}`}>{role}</button>
                                     ))}
                                 </div>
-                                {formData['entry.464377799'].map(val => <input key={val} type="hidden" name="entry.464377799" value={val} />)}
                             </div>
 
-                            {/* 第一部分：核心評估 */}
-                            <div className="py-10 px-4"><h3 className="text-3xl font-black text-sky-900 flex items-center gap-3"><span className="w-3 h-8 bg-sky-600 rounded-full"></span>服務整體感受評估</h3></div>
+                            <div className="py-10 px-4"><h3 className="text-3xl font-black text-sky-900 border-b-4 border-sky-600 inline-block pb-2">一、整體服務品質評估</h3></div>
                             
-                            {renderQuestionCard("1. 整體而言，您對目前的維運服務滿意程度為何？", "entry.1414352831", scoreOptions)}
+                            {renderScoreRow("1. 整體而言，您對目前的維運服務滿意程度為何？", "entry.1414352831")}
                             {isLowScore(formData['entry.1414352831']) && (
                                 <div className="p-8 bg-amber-50 rounded-[2.5rem] border-4 border-amber-200 animate-card mb-10">
-                                    <p className="text-amber-900 font-black mb-6 text-lg italic">1-1. 請簡要說明較不符合期待的原因 (可複選)：</p>
+                                    <p className="text-amber-900 font-black mb-6 text-lg italic">1-1. 請勾選原因 (可複選)：</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {["回應速度偏慢", "問題處理不夠即時", "技術說明或溝通不清楚", "巡檢或保養品質待加強", "故障排除效率不足", "與內部需求配合度不足"].map(r => (
-                                            <label key={r} className="flex items-center gap-4 p-4 bg-white rounded-2xl cursor-pointer hover:bg-amber-100 transition-all shadow-sm">
-                                                <input type="checkbox" name="entry.726589747" value={r} className="w-6 h-6 accent-amber-600" />
-                                                <span className="text-slate-700 font-black text-base">{r}</span>
+                                        {["回應速度偏慢", "問題處理不夠即時", "技術溝通不清楚", "巡檢品質待加強", "故障排除效率不足", "配合度不足"].map(r => (
+                                            <label key={r} className="flex items-center gap-4 p-4 bg-white rounded-2xl cursor-pointer shadow-sm hover:bg-amber-100 transition-colors">
+                                                <input type="checkbox" checked={formData['entry.726589747'].includes(r)} onChange={() => handleCheckboxChange('entry.726589747', r)} className="w-6 h-6 accent-amber-600" />
+                                                <span className="text-slate-700 font-black">{r}</span>
                                             </label>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {renderQuestionCard("2. 較您的期待，本公司的維運服務表現符合程度為何？", "entry.418035188", scoreOptions)}
+                            {renderScoreRow("2. 較您的期待，本公司的維運服務表現符合程度為何？", "entry.418035188")}
                             {isLowScore(formData['entry.418035188']) && (
                                 <div className="p-8 bg-amber-50 rounded-[2.5rem] border-4 border-amber-200 animate-card mb-10">
-                                    <p className="text-amber-900 font-black mb-6 text-lg italic">2-1. 您認為與原先期待落差較大的部分為何：</p>
+                                    <p className="text-amber-900 font-black mb-6 text-lg italic">2-1. 您認為落差較大的部分為何：</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {["回應速度", "技術專業度", "服務內容深度", "溝通與說明方式", "整體資源投入"].map(r => (
-                                            <label key={r} className="flex items-center gap-4 p-4 bg-white rounded-2xl cursor-pointer shadow-sm">
-                                                <input type="checkbox" name="entry.842552003" value={r} className="w-6 h-6 accent-amber-600" />
-                                                <span className="text-slate-700 font-black text-base">{r}</span>
+                                            <label key={r} className="flex items-center gap-4 p-4 bg-white rounded-2xl cursor-pointer shadow-sm hover:bg-amber-100 transition-colors">
+                                                <input type="checkbox" checked={formData['entry.842552003'].includes(r)} onChange={() => handleCheckboxChange('entry.842552003', r)} className="w-6 h-6 accent-amber-600" />
+                                                <span className="text-slate-700 font-black">{r}</span>
                                             </label>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {renderQuestionCard("3. 若以同類型比較，您認為本公司的維運品質競爭力為何？", "entry.2061844101", ["1.非常沒有競爭力", "2.沒有競爭力", "3.尚可", "4.有競爭力", "5.非常有競爭力"])}
+                            {renderScoreRow("3. 若以同類型比較，您認為本公司的維運品質競爭力為何？", "entry.2061844101")}
                             {isLowScore(formData['entry.2061844101']) && (
                                 <div className="p-8 bg-amber-50 rounded-[2.5rem] border-4 border-amber-200 animate-card mb-10">
-                                    <p className="text-amber-900 font-black mb-6 text-lg italic">3-1. 與其他服務商相比，您認為本公司較需要加強的面向：</p>
+                                    <p className="text-amber-900 font-black mb-6 text-lg italic">3-1. 需要加強的面向：</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {["價值感受與費用對應", "回應效率", "技術能力", "主動性與改善建議", "溝通協調"].map(r => (
-                                            <label key={r} className="flex items-center gap-4 p-4 bg-white rounded-2xl cursor-pointer shadow-sm">
-                                                <input type="checkbox" name="entry.67805626" value={r} className="w-6 h-6 accent-amber-600" />
-                                                <span className="text-slate-700 font-black text-base">{r}</span>
+                                            <label key={r} className="flex items-center gap-4 p-4 bg-white rounded-2xl cursor-pointer shadow-sm hover:bg-amber-100 transition-colors">
+                                                <input type="checkbox" checked={formData['entry.67805626'].includes(r)} onChange={() => handleCheckboxChange('entry.67805626', r)} className="w-6 h-6 accent-amber-600" />
+                                                <span className="text-slate-700 font-black">{r}</span>
                                             </label>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* 第二部分：細項評估 Q4-Q11 */}
-                            <div className="py-10 px-4"><h3 className="text-3xl font-black text-sky-900 flex items-center gap-3"><span className="w-3 h-8 bg-sky-600 rounded-full"></span>維運執行細項評估</h3></div>
+                            <div className="py-10 px-4"><h3 className="text-3xl font-black text-sky-900 border-b-4 border-sky-600 inline-block pb-2">二、維運執行細項評估</h3></div>
                             
-                            {renderQuestionCard("4. 定期巡檢與保養執行的確實程度", "entry.1003343879", ["1.非常沒有確實", "2.沒有確實", "3.尚可", "4.有確實", "5.非常有確實"])}
-                            {renderQuestionCard("5. 問題發現與回報的即時性", "entry.1664860146", ["1.非常不即時", "2.沒有即時", "3.尚可", "4.有即時", "5.非常即時"])}
-                            {renderQuestionCard("6. 異常事件的回應速度", "entry.1578497332", ["1.非常不即時", "2.沒有即時", "3.尚可", "4.有即時", "5.非常即時"])}
-                            {renderQuestionCard("7. 故障排除的專業度與完整性", "entry.553624540", ["1.非常不專業", "2.不專業", "3.尚可", "4.有專業", "5.非常專業"])}
-                            {renderQuestionCard("8. 發電監控與異常通知的清楚程度", "entry.1437601907", ["1.非常不清楚", "2.不清楚", "3.尚可", "4.有清楚", "5.非常清楚"])}
-                            {renderQuestionCard("9. 維運相關報告或說明的理解性", "entry.1343935114", ["1.非常不好理解", "2.不好理解", "3.尚可", "4.能理解", "5.非常能理解"])}
-                            {renderQuestionCard("10. 維運窗口的溝通順暢度", "entry.2141434383", ["1.非常不順暢", "2.不順暢", "3.尚可", "4.很順暢", "5.非常順暢"])}
-                            {renderQuestionCard("11. 對客戶需求與現場狀況的理解程度", "entry.2082616046", ["1.非常不理解", "2.不理解", "3.尚可", "4.能理解", "5.非常能理解"])}
+                            {renderScoreRow("4. 定期巡檢與保養執行的確實程度", "entry.1003343879")}
+                            {renderScoreRow("5. 問題發現與回報的即時性", "entry.1664860146")}
+                            {renderScoreRow("6. 異常事件的回應速度", "entry.1578497332")}
+                            {renderScoreRow("7. 故障排除的專業度與完整性", "entry.553624540")}
+                            {renderScoreRow("8. 發電監控與異常通知的清楚程度", "entry.1437601907")}
+                            {renderScoreRow("9. 維運相關報告或說明的理解性", "entry.1343935114")}
+                            {renderScoreRow("10. 維運窗口的溝通順暢度", "entry.2141434383")}
+                            {renderScoreRow("11. 對客戶需求與現場狀況的理解程度", "entry.2082616046")}
 
-                            {/* 第三部分：建議 */}
-                            <div className="py-10 px-4"><h3 className="text-3xl font-black text-sky-900 flex items-center gap-3"><span className="w-3 h-8 bg-sky-600 rounded-full"></span>總結與優化建議</h3></div>
+                            <div className="py-10 px-4"><h3 className="text-3xl font-black text-sky-900 border-b-4 border-sky-600 inline-block pb-2">三、總結與優化建議</h3></div>
                             
                             <div className="p-8 md:p-12 bg-white rounded-[2.5rem] shadow-xl border-l-[12px] border-emerald-500 animate-card mb-8">
-                                <label className="block text-slate-800 font-black mb-6 text-2xl">12. 您認為目前最需要優先改善的項目為：</label>
+                                <label className="block text-slate-800 font-black mb-6 text-2xl">12. 目前最需要優先改善的項目為：</label>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {["回應速度", "技術說明", "巡檢品質", "溝通方式"].map(item => (
                                         <label key={item} className="flex flex-col items-center gap-4 p-6 bg-sky-50 rounded-3xl cursor-pointer hover:bg-emerald-50 transition-all border-2 border-transparent hover:border-emerald-200">
-                                            <input type="checkbox" name="entry.951165679" value={item} className="w-8 h-8 accent-emerald-500" />
+                                            <input type="checkbox" checked={formData['entry.951165679'].includes(item)} onChange={() => handleCheckboxChange('entry.951165679', item)} className="w-8 h-8 accent-emerald-500" />
                                             <span className="font-black text-slate-700">{item}</span>
                                         </label>
                                     ))}
                                 </div>
                             </div>
                             
-                            {renderQuestionCard("13. 整體而言，目前維運服務是否仍有明顯改善空間？", "entry.1748333818", ["1.幾乎沒有", "2.少量", "3.中等", "4.明顯"])}
+                            {renderScoreRow("13. 整體而言，目前維運服務是否仍有明顯改善空間？", "entry.1748333818")}
 
                             <div className="p-8 md:p-12 bg-white rounded-[2.5rem] shadow-xl border-l-[12px] border-emerald-600 animate-card">
                                 <label className="block text-slate-800 font-black mb-4 text-2xl">14. 若未來可調整服務內容，您最希望優化的是？ <span className="text-rose-500">*</span></label>
-                                <textarea required name="entry.1579464985" rows="4" className="w-full px-8 py-6 bg-sky-50 border-2 border-sky-100 rounded-3xl focus:border-emerald-500 outline-none transition-all text-xl font-bold shadow-inner" placeholder="您的寶貴優化建議..."></textarea>
+                                <textarea required value={formData['entry.1579464985']} onChange={(e) => handleRadioChange('entry.1579464985', e.target.value)} rows="4" className="w-full px-8 py-6 bg-sky-50 border-2 border-sky-100 rounded-3xl focus:border-emerald-500 outline-none transition-all text-xl font-bold" placeholder="您的寶貴優化建議..."></textarea>
                                 
                                 <label className="block text-slate-800 font-black mt-10 mb-4 text-2xl">15. 其他建議或回饋 <span className="text-rose-500">*</span></label>
-                                <textarea required name="entry.1045920345" rows="4" className="w-full px-8 py-6 bg-sky-50 border-2 border-sky-100 rounded-3xl focus:border-emerald-500 outline-none transition-all text-xl font-bold shadow-inner" placeholder="任何您想對我們說的話..."></textarea>
+                                <textarea required value={formData['entry.1045920345']} onChange={(e) => handleRadioChange('entry.1045920345', e.target.value)} rows="4" className="w-full px-8 py-6 bg-sky-50 border-2 border-sky-100 rounded-3xl focus:border-emerald-500 outline-none transition-all text-xl font-bold" placeholder="您的回饋與想法..."></textarea>
                             </div>
 
-                            {/* 提交區域 */}
-                            <div className="pt-16 px-4">
+                            <div className="pt-16 px-4 pb-10">
                                 <button 
                                     type="submit" 
                                     disabled={loading} 
                                     className={`w-full py-8 rounded-[3rem] text-3xl font-black text-white shadow-2xl transition-all ${loading ? 'bg-slate-400 cursor-wait animate-pulse' : 'bg-gradient-to-r from-sky-600 to-sky-700 hover:scale-[1.02] active:scale-95'}`}
                                 >
-                                    {loading ? <span className="loading-dots tracking-tighter">資料傳輸中，請稍候</span> : '確認提交回覆'}
+                                    {loading ? <span className="loading-dots tracking-tighter">資料傳輸中</span> : '確認提交調查'}
                                 </button>
                                 <p className="text-center text-slate-400 text-lg mt-12 font-black tracking-widest">
-                                    日益智慧能源股份有限公司 - 2025 年度維運滿意度調查
+                                    日益智慧能源股份有限公司 - 2025 維運滿意度調查
                                 </p>
                             </div>
                         </form>
